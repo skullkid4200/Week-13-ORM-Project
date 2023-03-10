@@ -5,12 +5,33 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 
 // get all products
 router.get('/', (req, res) => {
+  Product.findAll({
+    include: [Category, Tag]
+  })
+  .then(data => res.json(data))
+  .catch(err => res.status(500).json(err));
   // find all products
   // be sure to include its associated Category and Tag data
 });
 
 // get one product
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
+  try {
+    const searchData = await Product.findOne({
+      where: {
+        id: req.params.id
+      },
+      include: [Category, Tag]
+    });
+    if (!searchData) {
+      return res.status(404).json({
+        "message": "Unlisted ID."
+      });
+    }
+    return res.json(searchData);
+  } catch(err) {
+    return res.status(500).json(err);
+  }
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
 });
@@ -89,7 +110,23 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleteData = await Product.destroy({
+      where: {
+        id: req.params.id
+      },
+      include: [Product]
+    });
+    if (!deleteData) {
+      return res.status(404).json({
+        "message": "Unlisted ID."
+      });
+    }
+    return res.json(deleteData);
+  } catch(err) {
+    return res.status(500).json(err);
+  }
   // delete one product by its `id` value
 });
 
